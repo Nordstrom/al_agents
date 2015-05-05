@@ -34,16 +34,16 @@ pkg_provider = node['alertlogic']['agent']['pkg_provider']
 source = "#{pkg_base_url}/#{pkg_name}#{pkg_vsn}.#{pkg_ext}"
 
 # define where the package will be located on local file system
-alertlogic_package = "#{Chef::Config['file_cache_path']}/#{pkg_name}#{pkg_vsn}.#{pkg_ext}"
+local_source = "#{Chef::Config['file_cache_path']}/#{pkg_name}#{pkg_vsn}.#{pkg_ext}"
 
 # download package
-remote_file alertlogic_package do
+remote_file local_source do
   source source
 end
 
 # install package
-package alertlogic_package do
+package local_source do
   provider pkg_provider
   options options
-  only_if { ::File.exist?(alertlogic_package) }
+  only_if { ::File.exist?(local_source) }
 end
