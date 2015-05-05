@@ -42,8 +42,9 @@ remote_file local_source do
 end
 
 # install package
-package local_source do
+package pkg_name do
   provider pkg_provider
+  source local_source
   options options
   only_if { ::File.exist?(local_source) }
 end
