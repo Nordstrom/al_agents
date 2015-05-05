@@ -17,30 +17,34 @@
 # limitations under the License.
 #
 
-#build remote_file source URL
-pkg_base_url = node["alertlogic"]["agent"]["pkg_base_url"]
-pkg_ext = node["alertlogic"]["agent"]["pkg_ext"]
-pkg_vsn = node["alertlogic"]["agent"]["pkg_vsn"]["#{pkg_ext}"]
-pkg_name = "al_agent"
+# define options for package installation
+sensor_host = node['alertlogic']['agent']['controller_host']
+sensor_port = node['alertlogic']['agent']['sensor_port']
+use_proxy = node['alertlogic']['agent']['use_proxy']
+prov_key = node['alertlogic']['agent']['provision_key']
+options = "SENSOR_HOST=#{sensor_host} SENSOR_PORT=#{sensor_port} USE_PROXY=#{use_proxy} PROV_KEY=#{prov_key}"
+
+# build remote_file source URL
+pkg_base_url = node['alertlogic']['agent']['pkg_base_url']
+pkg_ext = node['alertlogic']['agent']['pkg_ext']
+pkg_vsn = node['alertlogic']['agent']['pkg_vsn'][pkg_ext]
+pkg_name = 'al_agent'
+# platform specific package provider defined in default.rb
+pkg_provider = node['alertlogic']['agent']['pkg_provider']
 source = "#{pkg_base_url}/#{pkg_name}#{pkg_vsn}.#{pkg_ext}"
 
-#define where the package will be located on local file system
-alertlogic_package = "#{Chef::Config[:file_cache_path]}/#{pkg_name}#{pkg_vsn}.#{pkg_ext}"
+# define where the package will be located on local file system
+local_source = "#{Chef::Config['file_cache_path']}/#{pkg_name}#{pkg_vsn}.#{pkg_ext}"
 
-#download package
-remote_file alertlogic_package do
+# download package
+remote_file local_source do
   source source
 end
 
-#define options for package installation
-sensor_host = node["alertlogic"]["agent"]["controller_host"]
-sensor_port = node["alertlogic"]["agent"]["sensor_port"]
-use_proxy = node["alertlogic"]["agent"]["use_proxy"]
-prov_key = node["alertlogic"]["agent"]["provision_key"]
-options = "SENSOR_HOST=#{sensor_host} SENSOR_PORT=#{sensor_port} USE_PROXY=#{use_proxy} PROV_KEY=#{prov_key}"
-
-#install package
-windows_package alertlogic_package do
+# install package
+package pkg_name do
+  provider pkg_provider
+  source local_source
   options options
-  only_if { ::File.exists?("#{alertlogic_package}") }  
+  only_if { ::File.exist?(local_source) }
 end
